@@ -76,10 +76,9 @@ function MyApp({ Component, pageProps }: ComponentWithPageLayout) {
     updateSEO(Component.SEO || {});
   }, [Component]);
 
-  // From documentation on using Posthog with Next.js: https://posthog.com/docs/integrate/third-party/next-js
-  useEffect(() => {
-    initializePostHog();
+  initializePostHog();
 
+  useEffect(() => {
     const handleRouteChange = () => posthog.capture("$pageview");
     router.events.on("routeChangeComplete", handleRouteChange);
 

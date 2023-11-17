@@ -9,7 +9,7 @@ interface AnalyticEvent {
 
 function initializePostHog() {
   // eslint-disable-next-line
-  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_ID as string, { api_host: "https://app.posthog.com" });
+  posthog.init("phc_CVezHMBFBd2L229voAJpz85kCpvkz7hrjY7AJ4YzQaF", { api_host: "https://app.posthog.com" });
 }
 
 /**
@@ -22,6 +22,7 @@ function initializePostHog() {
  *
  */
 async function captureAnalytics({ title, property, value, userInfo }: AnalyticEvent) {
+  return;
   const analyticsObject: Record<string, string> = {};
 
   analyticsObject[property] = value;
