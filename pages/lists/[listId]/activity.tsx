@@ -18,6 +18,7 @@ import { getGraphColorPalette } from "lib/utils/color-utils";
 import ContributionsEvolutionByType from "components/molecules/ContributionsEvolutionByTypeCard/contributions-evolution-by-type-card";
 import useContributionsEvolutionByType from "lib/hooks/api/useContributionsByEvolutionType";
 import { setQueryParams } from "lib/utils/query-params";
+import { FeatureFlagged } from "stories/shared/feature-flagged";
 
 interface ContributorListPageProps {
   list?: DBList;
@@ -166,7 +167,9 @@ const ListActivityPage = ({ list, numberOfContributors, isError, activityData, i
             data={treemapData}
             color={getGraphColorPalette()}
           />
-          <ContributionsEvolutionByType data={evolutionData} isLoading={isLoadingEvolution} />
+          <FeatureFlagged flag="CONTRIBUTIONS_EVOLUTION_BY_TYPE">
+            <ContributionsEvolutionByType data={evolutionData} isLoading={isLoadingEvolution} />
+          </FeatureFlagged>
         </div>
       )}
     </ListPageLayout>

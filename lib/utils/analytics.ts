@@ -7,7 +7,7 @@ interface AnalyticEvent {
   userInfo: DbUser | undefined;
 }
 
-function initiateAnalytics() {
+function initializePostHog() {
   // eslint-disable-next-line
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_ID as string, { api_host: "https://app.posthog.com" });
 }
@@ -48,4 +48,4 @@ async function captureAnalytics({ title, property, value, userInfo }: AnalyticEv
   posthog.capture(title, analyticsObject);
 }
 
-export { initiateAnalytics, captureAnalytics };
+export { initializePostHog, captureAnalytics };

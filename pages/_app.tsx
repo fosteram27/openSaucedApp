@@ -15,7 +15,7 @@ import { PostHogProvider } from "posthog-js/react";
 import { TipProvider } from "components/atoms/Tooltip/tooltip";
 
 import publicApiFetcher from "lib/utils/public-api-fetcher";
-import { initiateAnalytics } from "lib/utils/analytics";
+import { initializePostHog } from "lib/utils/analytics";
 import { supabase } from "lib/utils/supabase";
 
 import SEO from "layouts/SEO/SEO";
@@ -78,7 +78,7 @@ function MyApp({ Component, pageProps }: ComponentWithPageLayout) {
 
   // From documentation on using Posthog with Next.js: https://posthog.com/docs/integrate/third-party/next-js
   useEffect(() => {
-    initiateAnalytics();
+    initializePostHog();
 
     const handleRouteChange = () => posthog.capture("$pageview");
     router.events.on("routeChangeComplete", handleRouteChange);
