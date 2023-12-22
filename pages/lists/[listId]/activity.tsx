@@ -2,6 +2,7 @@ import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
 import { GetServerSidePropsContext } from "next";
 import { NodeMouseEventHandler } from "@nivo/treemap";
 import { useRouter } from "next/router";
+import { useRef, useState } from "react";
 import Error from "components/atoms/Error/Error";
 import { fetchApiData, validateListPath } from "helpers/fetchApiData";
 import ListPageLayout from "layouts/lists";
@@ -126,6 +127,8 @@ const ListActivityPage = ({ list, numberOfContributors, isError, isOwner, featur
     isError: evolutionError,
     isLoading: isLoadingEvolution,
   } = useContributionsEvolutionByType({ listId: list!.id, range: Number(range ?? "30") });
+  const treemapRef = useRef<HTMLSpanElement>(null);
+  const [resizeTreemap, setResizeTreemap] = useState(true);
 
   return (
     <ListPageLayout list={list} numberOfContributors={numberOfContributors} isOwner={isOwner}>
@@ -141,14 +144,27 @@ const ListActivityPage = ({ list, numberOfContributors, isError, isOwner, featur
             contributorType={contributorType}
             isLoading={isLoading}
           />
-          <ContributionsTreemap
-            setRepoId={setRepoId}
-            repoId={repoId}
-            onClick={onHandleClick}
-            data={treemapData}
-            color={getGraphColorPalette()}
-            isLoading={isLoadingProjectContributionsByUser || isTreemapLoading}
-          />
+          <span ref={treemapRef}>
+            <ContributionsTreemap
+              setRepoId={setRepoId}
+              repoId={repoId}
+              onClick={onHandleClick}
+              data={treemapData}
+              color={getGraphColorPalette()}
+              isLoading={isLoadingProjectContributionsByUser || isTreemapLoading}
+              onToggleResize={() => {
+                const treeMap = treemapRef.current;
+
+                if (!treeMap) {
+                  return;
+                }
+
+                treeMap.style.gridColumn = resizeTreemap ? "1 / span 2" : "";
+                treeMap.style.gridRow = resizeTreemap ? "1 / span 2" : "";
+                setResizeTreemap(!resizeTreemap);
+              }}
+            />
+          </span>
           <FeatureFlagged flag="contributions_evolution_by_type" featureFlags={featureFlags}>
             <ContributionsEvolutionByType data={evolutionData} isLoading={isLoadingEvolution} />
           </FeatureFlagged>
