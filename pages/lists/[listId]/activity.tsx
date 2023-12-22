@@ -2,7 +2,7 @@ import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
 import { GetServerSidePropsContext } from "next";
 import { NodeMouseEventHandler } from "@nivo/treemap";
 import { useRouter } from "next/router";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import Error from "components/atoms/Error/Error";
 import { fetchApiData, validateListPath } from "helpers/fetchApiData";
 import ListPageLayout from "layouts/lists";
@@ -140,10 +140,8 @@ const ListActivityPage = ({ list, numberOfContributors, isError, isOwner, featur
     graphResizerLookup.set(mostActiveRef.current, true);
   }
 
-  const [graphResizer, setGraphResizer] = useState(graphResizerLookup);
-
   const onToggleResize: OnToggleResizeEventType = (event) => {
-    let graphNode = event.target as HTMLElement;
+    let graphNode = event.currentTarget as HTMLElement;
     const graphElements = [...graphResizerLookup.keys()];
 
     for (const node of graphElements) {
@@ -162,17 +160,16 @@ const ListActivityPage = ({ list, numberOfContributors, isError, isOwner, featur
 
     for (const node of graphElements) {
       if (node === graphNode) {
-        graphResizerLookup.set(graphNode, !graphResizerLookup.get(graphNode));
+        continue;
       }
 
-      graphResizer.set(node, true);
+      graphResizerLookup.set(node, true);
     }
 
-    setGraphResizer((graphResizer) => new Map(graphResizer));
-
-    const resizeTreemap = graphResizer.get(graphNode);
+    const resizeTreemap = graphResizerLookup.get(graphNode);
     graphNode.style.gridColumn = resizeTreemap ? "1 / span 2" : "";
     graphNode.style.gridRow = resizeTreemap ? "1 / span 2" : "";
+    graphResizerLookup.set(graphNode, !resizeTreemap);
   };
 
   return (
@@ -181,7 +178,7 @@ const ListActivityPage = ({ list, numberOfContributors, isError, isOwner, featur
         <Error errorMessage="Unable to load list activity" />
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <span ref={mostActiveRef}>
+          <span ref={mostActiveRef} className="relative">
             <MostActiveContributorsCard
               data={contributorStats?.data ?? []}
               totalContributions={contributorStats?.meta.allContributionsCount ?? 0}
@@ -192,7 +189,7 @@ const ListActivityPage = ({ list, numberOfContributors, isError, isOwner, featur
               onToggleResize={onToggleResize}
             />
           </span>
-          <span ref={treemapRef}>
+          <span ref={treemapRef} className="relative">
             <ContributionsTreemap
               setRepoId={setRepoId}
               repoId={repoId}
