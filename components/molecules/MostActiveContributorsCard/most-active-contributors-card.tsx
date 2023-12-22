@@ -8,6 +8,7 @@ import Card from "components/atoms/Card/card";
 import Tooltip from "components/atoms/Tooltip/tooltip";
 import { ContributorType, ContributorTypeFilter } from "components/Graphs/shared/contributor-type-filter";
 import AvatarHoverCard from "components/atoms/Avatar/avatar-hover-card";
+import { GraphResizer } from "components/Graphs/shared/graph-resizer";
 
 // omit total_contributions and login from ContributorStat
 type StatKeys = keyof Omit<ContributorStat, "total_contributions" | "login">;
@@ -52,9 +53,10 @@ const LegendItem = ({ color, title }: { color?: string; title: string }) => {
   );
 };
 
-const MostActiveCard = ({ children }: { children: ReactNode }) => {
+const MostActiveCard = ({ onToggleResize, children }: { onToggleResize; children: ReactNode }) => {
   return (
     <Card className="grid place-content-stretch overflow-hidden">
+      <GraphResizer onToggleResize={onToggleResize} />
       <div
         className="grid p-2 relative"
         style={{
@@ -99,6 +101,7 @@ export default function MostActiveContributorsCard({
   contributorType,
   isLoading,
   totalContributions,
+  onToggleResize,
 }: Props) {
   const dataLabels = getDataLabels(topContributor!, dataLabelsList);
   const labels = Object.keys(dataLabels);
@@ -108,7 +111,7 @@ export default function MostActiveContributorsCard({
   }%`;
 
   return (
-    <MostActiveCard>
+    <MostActiveCard onToggleResize={onToggleResize}>
       <>
         {topContributor && (
           <div className="text-sm text-slate-400 mb-4">

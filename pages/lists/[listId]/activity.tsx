@@ -16,6 +16,7 @@ import ContributionsEvolutionByType from "components/molecules/ContributionsEvol
 import useContributionsEvolutionByType from "lib/hooks/api/useContributionsByEvolutionType";
 import { FeatureFlagged } from "components/shared/feature-flagged";
 import { FeatureFlag, getAllFeatureFlags } from "lib/utils/server/feature-flags";
+import { OnToggleResizeEventType } from "components/Graphs/shared/graph-resizer";
 
 interface ContributorListPageProps {
   list?: DBList;
@@ -128,7 +129,51 @@ const ListActivityPage = ({ list, numberOfContributors, isError, isOwner, featur
     isLoading: isLoadingEvolution,
   } = useContributionsEvolutionByType({ listId: list!.id, range: Number(range ?? "30") });
   const treemapRef = useRef<HTMLSpanElement>(null);
-  const [resizeTreemap, setResizeTreemap] = useState(true);
+  const mostActiveRef = useRef<HTMLSpanElement>(null);
+  const graphResizerLookup = new Map();
+
+  if (treemapRef.current) {
+    graphResizerLookup.set(treemapRef.current, true);
+  }
+
+  if (mostActiveRef.current) {
+    graphResizerLookup.set(mostActiveRef.current, true);
+  }
+
+  const [graphResizer, setGraphResizer] = useState(graphResizerLookup);
+
+  const onToggleResize: OnToggleResizeEventType = (event) => {
+    let graphNode = event.target as HTMLElement;
+    const graphElements = [...graphResizerLookup.keys()];
+
+    for (const node of graphElements) {
+      node.style.gridColumn = "";
+      node.style.gridRow = "";
+    }
+
+    // find the parent element = to treeMap by recursively going up the DOM to find treeMap element
+    while (graphNode?.parentElement) {
+      graphNode = graphNode.parentElement;
+
+      if (graphElements.includes(graphNode)) {
+        break;
+      }
+    }
+
+    for (const node of graphElements) {
+      if (node === graphNode) {
+        graphResizerLookup.set(graphNode, !graphResizerLookup.get(graphNode));
+      }
+
+      graphResizer.set(node, true);
+    }
+
+    setGraphResizer((graphResizer) => new Map(graphResizer));
+
+    const resizeTreemap = graphResizer.get(graphNode);
+    graphNode.style.gridColumn = resizeTreemap ? "1 / span 2" : "";
+    graphNode.style.gridRow = resizeTreemap ? "1 / span 2" : "";
+  };
 
   return (
     <ListPageLayout list={list} numberOfContributors={numberOfContributors} isOwner={isOwner}>
@@ -136,14 +181,17 @@ const ListActivityPage = ({ list, numberOfContributors, isError, isOwner, featur
         <Error errorMessage="Unable to load list activity" />
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <MostActiveContributorsCard
-            data={contributorStats?.data ?? []}
-            totalContributions={contributorStats?.meta.allContributionsCount ?? 0}
-            topContributor={contributorStats?.data?.length ? contributorStats.data[0] : undefined}
-            setContributorType={setContributorType}
-            contributorType={contributorType}
-            isLoading={isLoading}
-          />
+          <span ref={mostActiveRef}>
+            <MostActiveContributorsCard
+              data={contributorStats?.data ?? []}
+              totalContributions={contributorStats?.meta.allContributionsCount ?? 0}
+              topContributor={contributorStats?.data?.length ? contributorStats.data[0] : undefined}
+              setContributorType={setContributorType}
+              contributorType={contributorType}
+              isLoading={isLoading}
+              onToggleResize={onToggleResize}
+            />
+          </span>
           <span ref={treemapRef}>
             <ContributionsTreemap
               setRepoId={setRepoId}
@@ -152,17 +200,7 @@ const ListActivityPage = ({ list, numberOfContributors, isError, isOwner, featur
               data={treemapData}
               color={getGraphColorPalette()}
               isLoading={isLoadingProjectContributionsByUser || isTreemapLoading}
-              onToggleResize={() => {
-                const treeMap = treemapRef.current;
-
-                if (!treeMap) {
-                  return;
-                }
-
-                treeMap.style.gridColumn = resizeTreemap ? "1 / span 2" : "";
-                treeMap.style.gridRow = resizeTreemap ? "1 / span 2" : "";
-                setResizeTreemap(!resizeTreemap);
-              }}
+              onToggleResize={onToggleResize}
             />
           </span>
           <FeatureFlagged flag="contributions_evolution_by_type" featureFlags={featureFlags}>
